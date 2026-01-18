@@ -1,0 +1,79 @@
+# Render Blueprint - Deploy tất cả services cùng lúc
+# Tham khảo: https://render.com/docs/blueprint-spec
+
+services:
+  # Vector Storage Service (Python FastAPI)
+  - type: web
+    name: rag-vector-storage
+    runtime: python
+    rootDir: faiss-vector-storage
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    healthCheckPath: /debug
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+
+  # Backend Service (Node.js Express)
+  - type: web
+    name: rag-backend
+    runtime: node
+    rootDir: server-nodejs
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rag-database
+          property: connectionString
+      - key: VECTOR_STORAGE_URL
+        fromService:
+          type: web
+          name: rag-vector-storage
+          property: host
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: rag-frontend
+          property: host
+      - key: CORS_METHODS
+        value: GET,POST,PUT,DELETE,PATCH,OPTIONS
+      - key: CORS_ALLOWED_HEADERS
+        value: Content-Type,Authorization
+
+  # Frontend Service (React Static Site)
+  - type: web
+    name: rag-frontend
+    runtime: static
+    rootDir: rag-starter
+    buildCommand: yarn install && yarn build
+    staticPublishPath: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: rag-backend
+          property: host
+
+# Database
+databases:
+  - name: rag-database
+    databaseName: rag_db
+    user: rag_user
+    plan: free
