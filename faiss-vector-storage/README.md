@@ -1,25 +1,46 @@
 # 🐍 Vector Storage Service
 
-FastAPI service để lưu trữ và tìm kiếm vectors bằng FAISS.
+FastAPI service for vector storage and similarity search using FAISS.
 
-## 🚀 Chạy Local
+## 🚀 Quick Start
+
+### Local Development
 
 ```bash
-# Cài dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# Chạy server
+# Run server
 uvicorn main:app --reload --port 8000
 ```
 
-Truy cập: http://localhost:8000/docs
+Visit: http://localhost:8000/docs for API documentation
 
-## 📦 Endpoints
+## 📦 API Endpoints
 
-- `POST /add_vector` - Thêm vectors
-- `POST /search` - Tìm kiếm vectors
-- `GET /debug` - Xem thông tin debug
-- `POST /clear` - Xóa tất cả vectors
+### POST /add_vector
+Add vectors to the index
+```json
+{
+  "vectors": [[0.1, 0.2, ...], [0.3, 0.4, ...]],
+  "texts": ["text 1", "text 2"]
+}
+```
+
+### POST /search
+Search for similar vectors
+```json
+{
+  "vector": [0.1, 0.2, ...],
+  "k": 5
+}
+```
+
+### GET /debug
+Get index information
+
+### POST /clear
+Clear all vectors
 
 ## 🐳 Docker
 
@@ -31,10 +52,27 @@ docker build -t vector-storage .
 docker run -p 8000:8000 vector-storage
 ```
 
-## 🌐 Deploy
+## 🌐 Deploy to Railway
 
-Service này sẽ được deploy tự động khi dùng `render.yaml`.
+1. Push this repo to GitHub
+2. Create new project on Railway.app
+3. Connect GitHub repo
+4. Railway auto-detects Dockerfile and deploys!
 
-Xem hướng dẫn deploy trong file gốc:
-- `../BAT-DAU-O-DAY.md`
-- `../QUICK-START.md`
+## 📝 Environment Variables
+
+See `.env.example` for all available variables.
+
+For Railway, no env vars are required (uses defaults).
+
+## 🔧 Tech Stack
+
+- Python 3.11
+- FastAPI
+- FAISS (Facebook AI Similarity Search)
+- NumPy
+- Uvicorn
+
+## 📄 License
+
+MIT
